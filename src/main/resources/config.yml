@@ -1,0 +1,35 @@
+# General
+help-command: "Available commands: %c"
+invalid-player: "The player %p is not online!"
+operation-cancelled: "Operation cancelled."
+player-only: "You must be a player in order to perform this command!"
+
+# MySQL
+database-name: party
+host: 135.125.201.27:3306
+password: NeGEdyh3hDVRsEQVHrkT329trAMTvrr5
+username: party
+
+# Party
+already-in-party: "You are already in a party!"
+has-invite: "That player already has in invitation!"
+no-invitation: "You don't have any invitations!"
+not-in-party: "You are not in a party!"
+party-created: "Party successfully created!"
+party-distance: 100
+party-full: "Your party is already full!"
+party-invite-already-in: "That player's already in a party!"
+party-invite-expire-seconds: 15
+party-invite-inventory-title: "Invite"
+party-invite-item-already-possess: "You already have that item!"
+party-invite-oneself: "Damn, dude, that's sad."
+party-invite-received: "You received a party invite from %p. Use %c to accept it."
+party-invite-sent: "Party invitation sent!"
+party-join-party: "Click here to join the party"
+party-maximum-size: 10
+party-request-chat-hover: "Accept request"
+party-request-message: "%p has requested to join your party. Allow it?"
+party-request-message-sent: "Request sent!"
+party-set-item-invalid: "Invalid item!"
+party-set-item-permission: "party.admin"
+party-set-item-success: "Item successfully set!"
