@@ -19,7 +19,9 @@ import org.bukkit.entity.Player
 import java.util.stream.Collectors
 
 class PartyCommand : CommandExecutor, TabCompleter {
+
     private val permission: String = Main.instance.config.getString("party-set-item-permission", "party.admin")!!
+
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
         if (sender !is Player) {
             Logging.log(sender, "@player-only@")
@@ -95,14 +97,12 @@ class PartyCommand : CommandExecutor, TabCompleter {
                     else
                         sender.sendMessage(Logging.getMessage("@party-invite-item-already-possess@"))
                 } else if (args[0].equals("accept", true)) {
-                    if (!Invite.hasInvite(sender)) {
+                    val inviter = Invite.getInviter(sender)
+                    if (inviter == null) {
                         Logging.log(sender, "@no-invitation@")
                         return true
                     }
-                    var party = Party.getParty(sender.uniqueId)
-                    if (party == null)
-                        party = Party(sender)
-                    val inviter = Invite.getInviter(sender)!!
+                    val party = Party.getParty(sender.uniqueId) ?: Party(sender)
                     party.addPlayers(Bukkit.getOfflinePlayer(inviter))
                     Invite.removeInvite(sender)
                 } else if (args[0].equals("join", ignoreCase = true)) {
@@ -242,6 +242,6 @@ class PartyCommand : CommandExecutor, TabCompleter {
                 }
             }
         }
-        return emptyList()
+        return listOf()
     }
 }

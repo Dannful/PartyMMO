@@ -99,27 +99,24 @@ class Party {
      * Gets the players eligible for the additional XP system around the specified [player]
      */
     fun getNearbyPlayers(player: Player): List<Player> {
-        val list: MutableList<Player> = mutableListOf()
-        for (p in onlinePlayers) {
-            if (p.location.distance(player.location) <= Main.instance.config.getDouble("party-distance", 100.0)) {
-                list.add(p)
-            }
+        return onlinePlayers.filter {
+            it.location.distance(player.location) <= Main.instance.config.getDouble(
+                "party-distance",
+                100.0
+            )
         }
-        list.remove(player)
-        return list
     }
 
     /**
      * Gets the players eligible for the additional XP system based on a specific [location]
      */
     fun getNearbyPlayers(location: Location): List<Player> {
-        val list = mutableListOf<Player>()
-        for (p in onlinePlayers) {
-            if (p.location.distance(location) <= Main.instance.config.getDouble("party-distance", 100.0)) {
-                list.add(p)
-            }
+        return onlinePlayers.filter {
+            it.location.distance(location) <= Main.instance.config.getDouble(
+                "party-distance",
+                100.0
+            )
         }
-        return list
     }
 
     /**
@@ -150,6 +147,7 @@ class Party {
     }
 
     companion object {
+
         /**
          * Gets the maximum party size
          */
@@ -173,7 +171,7 @@ class Party {
          * Checks if there is a party containing the specified [uuid]
          */
         fun hasParty(uuid: UUID): Boolean {
-            return getParty(uuid) != null
+            return parties.any { it.players.contains(uuid) }
         }
     }
 }

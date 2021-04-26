@@ -8,24 +8,22 @@ import java.util.function.BiConsumer
 
 object Invite {
     private val invites = HashMap<UUID, MutableList<UUID>>()
+
     fun invite(a: Player, b: Player, action: BiConsumer<Player, Player>? = null) {
         invites[a.uniqueId] = invites.getOrDefault(a.uniqueId, mutableListOf()).also { it.add(b.uniqueId) }
         Bukkit.getScheduler().scheduleSyncDelayedTask(Main.instance, {
-            val i = invites.getOrDefault(a.uniqueId, mutableListOf()).also { it.remove(a.uniqueId) }
-            if (i.isEmpty())
+            val i = invites.getOrDefault(a.uniqueId, mutableListOf()).also { it.remove(a.uniqueId) }.ifEmpty {
                 invites.remove(a.uniqueId)
-            else
+                mutableListOf()
+            }
+            if (i.isNotEmpty())
                 invites[a.uniqueId] = i
-            (a to b).let { action?.accept(it.first, it.second) }
-        }, 20 * Main.instance.config.getInt("party-invite-expire-seconds", 15).toLong())
-    }
-
-    fun hasInvited(a: Player): Boolean {
-        return invites.containsKey(a.uniqueId)
+            (a as Player?)?.let { (b as Player?)?.run { action?.accept(it, this) } }
+        }, 20 * Main.instance.config.getLong("party-invite-expire-seconds", 15))
     }
 
     fun hasInvite(b: Player): Boolean {
-        return invites.values.find { it.contains(b.uniqueId) } != null
+        return invites.values.any { it.contains(b.uniqueId) }
     }
 
     fun removeInvite(b: Player) {

@@ -7,15 +7,13 @@ import org.bukkit.ChatColor
 import org.bukkit.plugin.java.JavaPlugin
 
 class Main : JavaPlugin() {
+
     override fun onEnable() {
         saveDefaultConfig()
         getCommand("party")!!.setExecutor(PartyCommand())
         getCommand("party")!!.tabCompleter = PartyCommand()
         server.pluginManager.registerEvents(PartyEvents(), this)
         Database.createConnection()
-    }
-
-    override fun onDisable() {
     }
 
     companion object {

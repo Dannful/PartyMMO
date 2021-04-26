@@ -13,6 +13,8 @@ object Database {
     private lateinit var updatePreparedStatement: PreparedStatement
     private lateinit var selectPreparedStatement: PreparedStatement
 
+    private val playersColumnSize = Party.maximumPartySize * 36 + Party.maximumPartySize - 1
+
     fun createConnection() {
         val config: FileConfiguration = Main.instance.config
         val username = config.getString("username").orEmpty()
@@ -30,7 +32,7 @@ object Database {
             Logging.console("Successfully connected to the parties database!")
             val stmt = connection.createStatement()
             Logging.console("Attempting to create and/or connect to the table...")
-            stmt.execute("create table if not exists parties (id VARCHAR(36) NOT NULL, players VARCHAR(${(Party.maximumPartySize * 36 + Party.maximumPartySize - 1)}) NOT NULL, PRIMARY KEY (id))")
+            stmt.execute("create table if not exists parties (id VARCHAR(36) NOT NULL, players VARCHAR($playersColumnSize) NOT NULL, PRIMARY KEY (id))")
             stmt.close()
             Logging.console("Connection to the table established.")
             Logging.console("Preparing SQL statements...")
@@ -88,8 +90,31 @@ object Database {
             }
             table.close()
 
+            val primaryKeys = connection.metaData.getPrimaryKeys(null, null, "parties") ?: return false
+            if (!primaryKeys.next()) {
+                primaryKeys.close()
+                return false
+            }
+            if (!primaryKeys.getString("COLUMN_NAME").equals("id")) {
+                primaryKeys.close()
+                return false
+            }
+            primaryKeys.close()
+
             val idColumn = connection.metaData.getColumns(null, null, "parties", "id") ?: return false
             if (!idColumn.next()) {
+                idColumn.close()
+                return false
+            }
+            if (idColumn.getInt("DATA_TYPE") != Types.VARCHAR) {
+                idColumn.close()
+                return false
+            }
+            if (idColumn.getInt("COLUMN_SIZE") < 36) {
+                idColumn.close()
+                return false
+            }
+            if (idColumn.getString("IS_NULLABLE").equals("yes", true)) {
                 idColumn.close()
                 return false
             }
@@ -97,6 +122,18 @@ object Database {
 
             val playersColumn = connection.metaData.getColumns(null, null, "parties", "players") ?: return false
             if (!playersColumn.next()) {
+                playersColumn.close()
+                return false
+            }
+            if (playersColumn.getInt("DATA_TYPE") != Types.VARCHAR) {
+                playersColumn.close()
+                return false
+            }
+            if (playersColumn.getInt("COLUMN_SIZE") < playersColumnSize) {
+                playersColumn.close()
+                return false
+            }
+            if (playersColumn.getString("IS_NULLABLE").equals("yes", true)) {
                 playersColumn.close()
                 return false
             }
@@ -115,12 +152,6 @@ object Database {
             val resultSet = get() ?: return parties
             while (resultSet.next()) {
                 val s = resultSet.getString("players")
-                if (!s.contains(",")) {
-                    val element = Party(listOf(Bukkit.getOfflinePlayer(UUID.fromString(s))))
-                    element.id = UUID.fromString(resultSet.getString("id"))
-                    parties.add(element)
-                    continue
-                }
                 val element = Party(s.split(",").map { UUID.fromString(it) }
                     .map { Bukkit.getOfflinePlayer(it) })
                 element.id = UUID.fromString(resultSet.getString("id"))
